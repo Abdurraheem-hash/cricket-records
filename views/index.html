@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Cricket Records</title>
+
+<link
+    rel="stylesheet"
+    href="/css/style.css">
+
+
+</head>
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+     ===================================================== -->
+
+<header class="navbar">
+
+    <div class="logo">
+
+        <span class="logo-icon">🏏</span>
+
+        <span>
+            CRICKET RECORDS
+        </span>
+
+    </div>
+
+
+    <nav class="desktop-nav">
+
+        <a href="#home" class="active">
+            HOME
+        </a>
+
+        <a href="#series-cups">
+            SERIES &amp; CUPS
+        </a>
+
+        <a href="#match-records">
+            MATCH RECORDS
+        </a>
+
+        <a href="#biodata">
+            BIODATA
+        </a>
+
+        <a href="#admin">
+            ADMIN
+        </a>
+
+    </nav>
+
+
+    <button
+        class="menu-button"
+        onclick="toggleMenu()">
+
+        ☰
+
+    </button>
+
+</header>
+
+
+
+<!-- =====================================================
+     MOBILE MENU
+     ===================================================== -->
+
+<div
+    class="mobile-menu"
+    id="mobileMenu">
+
+    <a
+        href="#home"
+        onclick="closeMenu()">
+
+        HOME
+
+    </a>
+
+
+    <a
+        href="#series-cups"
+        onclick="closeMenu()">
+
+        SERIES &amp; CUPS
+
+    </a>
+
+
+    <a
+        href="#match-records"
+        onclick="closeMenu()">
+
+        MATCH RECORDS
+
+    </a>
+
+
+    <a
+        href="#biodata"
+        onclick="closeMenu()">
+
+        BIODATA
+
+    </a>
+
+
+    <a
+        href="#admin"
+        onclick="closeMenu()">
+
+        ADMIN
+
+    </a>
+
+</div>
+
+
+
+<!-- =====================================================
+     MAIN
+     ===================================================== -->
+
+<main>
+
+
+    <!-- =================================================
+         HERO
+         ================================================= -->
+
+    <section
+        class="hero"
+        id="home">
+
+        <div
+            class="hero-decoration hero-decoration-one">
+        </div>
+
+
+        <div
+            class="hero-decoration hero-decoration-two">
+        </div>
+
+
+        <div class="hero-content">
+
+
+            <div class="teams">
+
+                <span class="cricket-icon">
+                    🏏
+                </span>
+
+
+                <span id="teamAName">
+                    TEAM A
+                </span>
+
+
+                <span class="vs">
+                    VS
+                </span>
+
+
+                <span id="teamBName">
+                    TEAM B
+                </span>
+
+            </div>
+
+
+            <div class="gold-line"></div>
+
+
+            <h1>
+                CRICKET RECORDS
+            </h1>
+
+
+            <p class="hero-tagline">
+
+                Series
+                <span>•</span>
+                Cups
+                <span>•</span>
+                History
+
+            </p>
+
+
+            <p class="hero-description">
+
+                Explore the complete history of matches,
+                series and cups.
+
+            </p>
+
+
+            <a
+                href="#series-cups"
+                class="hero-button">
+
+                VIEW SERIES &amp; CUPS
+
+                <span>→</span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         OVERALL RECORD
+         ================================================= -->
+
+    <section class="overall-record">
+
+        <div class="section-heading">
+
+            <span class="section-line"></span>
+
+            <h2>
+                OVERALL RECORD
+            </h2>
+
+            <span class="section-line"></span>
+
+        </div>
+
+
+        <div class="record-cards">
+
+
+            <div class="record-card">
+
+                <div class="record-icon">
+                    🏏
+                </div>
+
+
+                <div
+                    class="record-number"
+                    id="matchesPlayed">
+
+                    0
+
+                </div>
+
+
+                <div class="record-label">
+
+                    MATCHES PLAYED
+
+                </div>
+
+            </div>
+
+
+
+            <div class="record-card team-a-card">
+
+                <div class="record-icon">
+                    🏆
+                </div>
+
+
+                <div
+                    class="record-number"
+                    id="teamAWins">
+
+                    0
+
+                </div>
+
+
+                <div
+                    class="record-label"
+                    id="teamALabel">
+
+                    TEAM A WINS
+
+                </div>
+
+            </div>
+
+
+
+            <div class="record-card team-b-card">
+
+                <div class="record-icon">
+                    🏆
+                </div>
+
+
+                <div
+                    class="record-number"
+                    id="teamBWins">
+
+                    0
+
+                </div>
+
+
+                <div
+                    class="record-label"
+                    id="teamBLabel">
+
+                    TEAM B WINS
+
+                </div>
+
+            </div>
+
+
+
+            <div class="record-card lead-card">
+
+                <div class="record-icon">
+                    📊
+                </div>
+
+
+                <div
+                    class="record-number"
+                    id="leadNumber">
+
+                    0
+
+                </div>
+
+
+                <div
+                    class="record-label"
+                    id="leadLabel">
+
+                    TEAM A LEADS
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         CURRENT CUP
+         ================================================= -->
+
+    <section class="current-cup">
+
+        <div class="section-heading">
+
+            <span class="section-line"></span>
+
+            <h2>
+                🏆 CURRENT CUP
+            </h2>
+
+            <span class="section-line"></span>
+
+        </div>
+
+
+        <div class="cup-container">
+
+
+            <div class="cup-title">
+
+                <span class="cup-label">
+                    CURRENT
+                </span>
+
+
+                <h3 id="currentCupName">
+                    No Cup
+                </h3>
+
+
+                <p>
+                    Series championship
+                </p>
+
+            </div>
+
+
+
+            <div class="cup-teams">
+
+
+                <div class="cup-team team-a">
+
+                    <div class="cup-team-icon">
+                        🏆
+                    </div>
+
+
+                    <h4 id="cupTeamA">
+                        TEAM A
+                    </h4>
+
+
+                    <div
+                        class="cup-score"
+                        id="cupTeamAWins">
+
+                        0
+
+                    </div>
+
+
+                    <p>
+                        SERIES WINS
+                    </p>
+
+                </div>
+
+
+
+                <div class="cup-vs">
+                    VS
+                </div>
+
+
+
+                <div class="cup-team team-b">
+
+                    <div class="cup-team-icon">
+                        🏆
+                    </div>
+
+
+                    <h4 id="cupTeamB">
+                        TEAM B
+                    </h4>
+
+
+                    <div
+                        class="cup-score"
+                        id="cupTeamBWins">
+
+                        0
+
+                    </div>
+
+
+                    <p>
+                        SERIES WINS
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="cup-progress">
+
+
+                <div class="progress-row">
+
+                    <div class="progress-info">
+
+                        <span id="cupProgressTeamA">
+                            TEAM A
+                        </span>
+
+
+                        <strong id="cupProgressA">
+                            0 / 10
+                        </strong>
+
+                    </div>
+
+
+                    <div class="progress-bar">
+
+                        <div
+                            class="progress-fill team-a-progress"
+                            id="progressA"
+                            style="width:0%;">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="progress-row">
+
+                    <div class="progress-info">
+
+                        <span id="cupProgressTeamB">
+                            TEAM B
+                        </span>
+
+
+                        <strong id="cupProgressB">
+                            0 / 10
+                        </strong>
+
+                    </div>
+
+
+                    <div class="progress-bar">
+
+                        <div
+                            class="progress-fill team-b-progress"
+                            id="progressB"
+                            style="width:0%;">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="cup-rule">
+
+                <span class="rule-icon">
+                    🏆
+                </span>
+
+
+                <p>
+
+                    First team to reach
+                    <strong>
+                        10 series wins
+                    </strong>
+                    wins the Cup.
+
+                </p>
+
+            </div>
+
+
+            <a
+                href="#series-cups"
+                class="cup-button">
+
+                VIEW CUP
+
+                <span>→</span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         SERIES
+         ================================================= -->
+
+    <section
+        class="recent-series"
+        id="series-cups">
+
+        <div class="section-heading">
+
+            <span class="section-line"></span>
+
+            <h2>
+                SERIES &amp; CUP RECORDS
+            </h2>
+
+            <span class="section-line"></span>
+
+        </div>
+
+
+        <div
+            class="series-list"
+            id="seriesList">
+
+            <p>
+                Loading series...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         CUP HISTORY
+         ================================================= -->
+
+    <section class="cup-history">
+
+        <div class="section-heading">
+
+            <span class="section-line"></span>
+
+            <h2>
+                🏆 CUP HISTORY
+            </h2>
+
+            <span class="section-line"></span>
+
+        </div>
+
+
+        <div
+            class="cup-history-grid"
+            id="cupHistoryList">
+
+            <p>
+                Loading cups...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         MATCH RECORDS
+         ================================================= -->
+
+    <section
+        class="match-records"
+        id="match-records">
+
+        <div class="section-heading">
+
+            <span class="section-line"></span>
+
+            <h2>
+                MATCH RECORDS
+            </h2>
+
+            <span class="section-line"></span>
+
+        </div>
+
+
+        <div
+            class="match-record-container"
+            id="matchRecords">
+
+            <p>
+                Loading matches...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         BIODATA
+         ================================================= -->
+
+    <section
+        class="biodata"
+        id="biodata">
+
+        <div class="section-heading">
+
+            <span class="section-line"></span>
+
+            <h2>
+                👤 BIODATA
+            </h2>
+
+            <span class="section-line"></span>
+
+        </div>
+
+
+        <div
+            class="biodata-grid"
+            id="biodataList">
+
+            <p>
+                Loading player information...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         ADMIN
+         ================================================= -->
+
+    <section
+        class="admin-section"
+        id="admin">
+
+        <div class="admin-container">
+
+            <div class="admin-icon">
+                🔐
+            </div>
+
+
+            <h2>
+                ADMIN
+            </h2>
+
+
+            <p>
+
+                Record management is available only
+                to authorized administrators.
+
+            </p>
+
+
+            <a
+                href="/admin-login"
+                class="admin-button">
+
+                ADMIN LOGIN
+
+                <span>→</span>
+
+            </a>
+
+
+            <!-- TEAM SETTINGS -->
+
+            <a
+                href="/team-settings"
+                class="admin-button"
+                style="margin-top:12px;">
+
+                TEAM SETTINGS
+
+                <span>⚙</span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+
+<!-- =====================================================
+     FOOTER
+     ===================================================== -->
+
+<footer class="footer">
+
+    <div class="footer-content">
+
+
+        <div class="footer-brand">
+
+            <div class="footer-logo">
+
+                🏏 CRICKET RECORDS
+
+            </div>
+
+
+            <p>
+                Records • Series • Cups • History
+            </p>
+
+        </div>
+
+
+        <div class="footer-links">
+
+            <a href="#home">
+                Home
+            </a>
+
+
+            <a href="#series-cups">
+                Series &amp; Cups
+            </a>
+
+
+            <a href="#match-records">
+                Match Records
+            </a>
+
+
+            <a href="#biodata">
+                Biodata
+            </a>
+
+
+            <a href="#admin">
+                Admin
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <p>
+            © 2026 Cricket Records. All rights reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+
+<script>
+
+
+    // ==========================================
+    // STORE TEAM NAMES
+    // ==========================================
+
+    let teamAName = "Team A";
+
+    let teamBName = "Team B";
+
+
+
+    // ==========================================
+    // MOBILE MENU
+    // ==========================================
+
+    function toggleMenu() {
+
+        document
+            .getElementById("mobileMenu")
+            .classList.toggle("show");
+
+    }
+
+
+    function closeMenu() {
+
+        document
+            .getElementById("mobileMenu")
+            .classList.remove("show");
+
+    }
+
+
+
+    // ==========================================
+    // LOAD TEAM NAMES
+    // ==========================================
+
+    async function loadTeams() {
+
+        try {
+
+            const response =
+                await fetch("/api/teams");
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Unable to load teams"
+                );
+
+            }
+
+
+            const teams =
+                await response.json();
+
+
+            if (teams.length >= 2) {
+
+                teamAName =
+                    teams[0].team_name;
+
+                teamBName =
+                    teams[1].team_name;
+
+
+                document.getElementById(
+                    "teamAName"
+                ).textContent =
+                    teamAName.toUpperCase();
+
+
+                document.getElementById(
+                    "teamBName"
+                ).textContent =
+                    teamBName.toUpperCase();
+
+
+                document.getElementById(
+                    "cupTeamA"
+                ).textContent =
+                    teamAName.toUpperCase();
+
+
+                document.getElementById(
+                    "cupTeamB"
+                ).textContent =
+                    teamBName.toUpperCase();
+
+
+                document.getElementById(
+                    "cupProgressTeamA"
+                ).textContent =
+                    teamAName.toUpperCase();
+
+
+                document.getElementById(
+                    "cupProgressTeamB"
+                ).textContent =
+                    teamBName.toUpperCase();
+
+
+                document.getElementById(
+                    "teamALabel"
+                ).textContent =
+                    teamAName.toUpperCase() +
+                    " WINS";
+
+
+                document.getElementById(
+                    "teamBLabel"
+                ).textContent =
+                    teamBName.toUpperCase() +
+                    " WINS";
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Team loading error:",
+                error
+            );
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // LOAD MATCHES
+    // ==========================================
+
+    async function loadMatches() {
+
+        try {
+
+            const response =
+                await fetch("/api/matches");
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Unable to load matches"
+                );
+
+            }
+
+
+            const matches =
+                await response.json();
+
+
+            document.getElementById(
+                "matchesPlayed"
+            ).textContent =
+                matches.length;
+
+
+            let teamAWins = 0;
+
+            let teamBWins = 0;
+
+
+            matches.forEach(match => {
+
+                if (
+                    match.winner ===
+                    teamAName
+                ) {
+
+                    teamAWins++;
+
+                }
+
+
+                if (
+                    match.winner ===
+                    teamBName
+                ) {
+
+                    teamBWins++;
+
+                }
+
+            });
+
+
+            document.getElementById(
+                "teamAWins"
+            ).textContent =
+                teamAWins;
+
+
+            document.getElementById(
+                "teamBWins"
+            ).textContent =
+                teamBWins;
+
+
+            const difference =
+                Math.abs(
+                    teamAWins -
+                    teamBWins
+                );
+
+
+            document.getElementById(
+                "leadNumber"
+            ).textContent =
+                difference;
+
+
+            if (
+                teamAWins >
+                teamBWins
+            ) {
+
+                document.getElementById(
+                    "leadLabel"
+                ).textContent =
+                    teamAName.toUpperCase() +
+                    " LEADS";
+
+            }
+
+            else if (
+                teamBWins >
+                teamAWins
+            ) {
+
+                document.getElementById(
+                    "leadLabel"
+                ).textContent =
+                    teamBName.toUpperCase() +
+                    " LEADS";
+
+            }
+
+            else {
+
+                document.getElementById(
+                    "leadLabel"
+                ).textContent =
+                    "MATCHED";
+
+            }
+
+
+            displayMatches(matches);
+
+        } catch (error) {
+
+            console.error(
+                "Match loading error:",
+                error
+            );
+
+
+            document.getElementById(
+                "matchRecords"
+            ).innerHTML =
+                "<p>Unable to load matches.</p>";
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // DISPLAY MATCHES
+    // ==========================================
+
+    function displayMatches(matches) {
+
+        const container =
+            document.getElementById(
+                "matchRecords"
+            );
+
+
+        container.innerHTML = "";
+
+
+        if (matches.length === 0) {
+
+            container.innerHTML =
+                "<p>No matches recorded yet.</p>";
+
+            return;
+
+        }
+
+
+        matches.forEach(match => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "match-row";
+
+
+            row.innerHTML = `
+
+                <span>
+                    Series ${match.series_number || ""}
+                </span>
+
+                <span>
+                    Match ${match.match_number}
+                </span>
+
+                <span>
+                    ${
+                        match.match_date ||
+                        "Date not recorded"
+                    }
+                </span>
+
+                <strong>
+                    ${match.winner}
+                </strong>
+
+            `;
+
+
+            container.appendChild(row);
+
+        });
+
+    }
+
+
+
+    // ==========================================
+    // LOAD SERIES
+    // ==========================================
+
+    async function loadSeries() {
+
+        try {
+
+            const response =
+                await fetch("/api/series");
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Unable to load series"
+                );
+
+            }
+
+
+            const series =
+                await response.json();
+
+
+            const container =
+                document.getElementById(
+                    "seriesList"
+                );
+
+
+            container.innerHTML = "";
+
+
+            if (series.length === 0) {
+
+                container.innerHTML =
+                    "<p>No series recorded yet.</p>";
+
+                return;
+
+            }
+
+
+            series.forEach(item => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "series-card";
+
+
+                card.innerHTML = `
+
+                    <div class="series-number">
+
+                        <span>
+                            SERIES
+                        </span>
+
+                        <strong>
+                            ${item.series_number}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="series-info">
+
+                        <div class="series-top">
+
+                            <span class="best-of">
+                                SERIES
+                            </span>
+
+                            <span class="winner-badge">
+
+                                🏆
+                                ${
+                                    item.winner ||
+                                    "In Progress"
+                                }
+
+                            </span>
+
+                        </div>
+
+
+                        <h3>
+                            Series ${item.series_number}
+                        </h3>
+
+
+                        <p>
+                            ${
+                                item.cup_name ||
+                                "No Cup"
+                            }
+                        </p>
+
+
+                        <span class="series-result">
+
+                            Result:
+                            ${item.team_a_wins || 0}
+                            -
+                            ${item.team_b_wins || 0}
+
+                        </span>
+
+                    </div>
+
+                `;
+
+
+                container.appendChild(card);
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Series loading error:",
+                error
+            );
+
+
+            document.getElementById(
+                "seriesList"
+            ).innerHTML =
+                "<p>Unable to load series.</p>";
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // LOAD CUPS
+    // ==========================================
+
+    async function loadCups() {
+
+        try {
+
+            const response =
+                await fetch("/api/cups");
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Unable to load cups"
+                );
+
+            }
+
+
+            const cups =
+                await response.json();
+
+
+            const container =
+                document.getElementById(
+                    "cupHistoryList"
+                );
+
+
+            container.innerHTML = "";
+
+
+            if (cups.length === 0) {
+
+                container.innerHTML =
+                    "<p>No cups recorded yet.</p>";
+
+                document.getElementById(
+                    "currentCupName"
+                ).textContent =
+                    "No Cup";
+
+                return;
+
+            }
+
+
+            const currentCup =
+                cups[cups.length - 1];
+
+
+            document.getElementById(
+                "currentCupName"
+            ).textContent =
+                currentCup.cup_name;
+
+
+            const currentTeamAWins =
+                currentCup.team_a_series_wins || 0;
+
+            const currentTeamBWins =
+                currentCup.team_b_series_wins || 0;
+
+
+            document.getElementById(
+                "cupTeamAWins"
+            ).textContent =
+                currentTeamAWins;
+
+
+            document.getElementById(
+                "cupTeamBWins"
+            ).textContent =
+                currentTeamBWins;
+
+
+            document.getElementById(
+                "cupProgressA"
+            ).textContent =
+                currentTeamAWins +
+                " / 10";
+
+
+            document.getElementById(
+                "cupProgressB"
+            ).textContent =
+                currentTeamBWins +
+                " / 10";
+
+
+            document.getElementById(
+                "progressA"
+            ).style.width =
+                Math.min(
+                    currentTeamAWins * 10,
+                    100
+                ) + "%";
+
+
+            document.getElementById(
+                "progressB"
+            ).style.width =
+                Math.min(
+                    currentTeamBWins * 10,
+                    100
+                ) + "%";
+
+
+            cups.forEach(cup => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "history-card";
+
+
+                card.innerHTML = `
+
+                    <div class="history-icon">
+                        🏆
+                    </div>
+
+
+                    <span class="history-status">
+
+                        ${
+                            cup.completed
+                                ? "COMPLETED"
+                                : "CURRENT"
+                        }
+
+                    </span>
+
+
+                    <h3>
+                        CUP ${cup.cup_number}
+                    </h3>
+
+
+                    <p class="history-winner">
+
+                        ${
+                            cup.winner
+                                ? "Winner: " +
+                                  cup.winner
+                                : "In Progress"
+                        }
+
+                    </p>
+
+
+                    <div class="history-score">
+
+                        <div>
+
+                            <strong>
+                                ${
+                                    cup.team_a_series_wins ||
+                                    0
+                                }
+                            </strong>
+
+                            <span>
+                                ${teamAName.toUpperCase()}
+                            </span>
+
+                        </div>
+
+
+                        <div class="history-vs">
+                            -
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                ${
+                                    cup.team_b_series_wins ||
+                                    0
+                                }
+                            </strong>
+
+                            <span>
+                                ${teamBName.toUpperCase()}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+
+                container.appendChild(card);
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Cup loading error:",
+                error
+            );
+
+
+            document.getElementById(
+                "cupHistoryList"
+            ).innerHTML =
+                "<p>Unable to load cups.</p>";
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // LOAD BIODATA
+    // ==========================================
+
+    async function loadBiodata() {
+
+        try {
+
+            const response =
+                await fetch("/api/biodata");
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Unable to load biodata"
+                );
+
+            }
+
+
+            const players =
+                await response.json();
+
+
+            const container =
+                document.getElementById(
+                    "biodataList"
+                );
+
+
+            container.innerHTML = "";
+
+
+            if (players.length === 0) {
+
+                container.innerHTML =
+                    "<p>No player information available.</p>";
+
+                return;
+
+            }
+
+
+            players.forEach(player => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "player-card";
+
+
+                card.innerHTML = `
+
+                    <div class="player-photo">
+
+                        ${
+                            player.photo
+                                ? `<img
+                                    src="${player.photo}"
+                                    alt="${player.name}"
+                                    style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                                : "👤"
+                        }
+
+                    </div>
+
+
+                    <div class="player-details">
+
+                        <h3>
+                            ${player.name}
+                        </h3>
+
+
+                        <span class="player-role">
+
+                            ${
+                                player.role ||
+                                "Player"
+                            }
+
+                        </span>
+
+
+                        <p>
+
+                            ${
+                                player.biography ||
+                                "No biography available."
+                            }
+
+                        </p>
+
+                    </div>
+
+                `;
+
+
+                container.appendChild(card);
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Biodata loading error:",
+                error
+            );
+
+
+            document.getElementById(
+                "biodataList"
+            ).innerHTML =
+                "<p>Unable to load biodata.</p>";
+
+        }
+
+    }
+
+
+
+    // ==========================================
+    // LOAD EVERYTHING
+    // ==========================================
+
+    async function loadWebsite() {
+
+        await loadTeams();
+
+        await loadMatches();
+
+        await loadSeries();
+
+        await loadCups();
+
+        await loadBiodata();
+
+    }
+
+
+    loadWebsite();
+
+
+</script>
+
+
+</body>
+
+</html>

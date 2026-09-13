@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Team Settings - Cricket Records</title>
+
+<link
+    rel="stylesheet"
+    href="/css/style.css">
+
+
+</head>
+
+<body class="admin-dashboard-page">
+
+
+<!-- HEADER -->
+
+<header class="admin-dashboard-header">
+
+    <div>
+
+        <h1>🏏 CRICKET RECORDS</h1>
+
+        <p>Team Settings</p>
+
+    </div>
+
+
+    <a href="/admin-dashboard">
+
+        <button
+            class="admin-logout-button"
+            style="background:#1976d2;">
+
+            BACK
+
+        </button>
+
+    </a>
+
+</header>
+
+
+
+<!-- MAIN -->
+
+<main class="admin-dashboard-container">
+
+
+    <div class="admin-welcome">
+
+        <h2>Team Settings</h2>
+
+        <p>
+            Change the names of Team A and Team B.
+        </p>
+
+    </div>
+
+
+
+    <!-- TEAM A -->
+
+    <div class="admin-dashboard-card">
+
+        <h3>Team 1</h3>
+
+        <label for="team1">
+
+            <strong>Team Name</strong>
+
+        </label>
+
+        <br><br>
+
+        <input
+            type="text"
+            id="team1"
+            placeholder="Enter team name"
+            style="
+                width:100%;
+                padding:12px;
+                border:1px solid #ccc;
+                border-radius:6px;
+                box-sizing:border-box;
+            ">
+
+        <br><br>
+
+        <button onclick="saveTeam(0)">
+            SAVE TEAM 1
+        </button>
+
+    </div>
+
+
+
+    <!-- TEAM B -->
+
+    <div
+        class="admin-dashboard-card"
+        style="margin-top:20px;">
+
+        <h3>Team 2</h3>
+
+        <label for="team2">
+
+            <strong>Team Name</strong>
+
+        </label>
+
+        <br><br>
+
+        <input
+            type="text"
+            id="team2"
+            placeholder="Enter team name"
+            style="
+                width:100%;
+                padding:12px;
+                border:1px solid #ccc;
+                border-radius:6px;
+                box-sizing:border-box;
+            ">
+
+        <br><br>
+
+        <button onclick="saveTeam(1)">
+            SAVE TEAM 2
+        </button>
+
+    </div>
+
+
+
+    <!-- MESSAGE -->
+
+    <p
+        id="message"
+        style="
+            margin-top:20px;
+            font-weight:bold;
+        ">
+    </p>
+
+
+
+    <!-- BACK -->
+
+    <div class="admin-back-section">
+
+        <a href="/admin-dashboard">
+            ← Back to Admin Dashboard
+        </a>
+
+    </div>
+
+
+</main>
+
+
+
+<script>
+
+
+    // =========================================
+    // LOAD TEAMS
+    // =========================================
+
+    function loadTeams() {
+
+        fetch("/api/teams")
+
+            .then(response =>
+                response.json()
+            )
+
+            .then(teams => {
+
+                if (teams.length >= 1) {
+
+                    document.getElementById(
+                        "team1"
+                    ).value =
+                        teams[0].team_name;
+
+                }
+
+
+                if (teams.length >= 2) {
+
+                    document.getElementById(
+                        "team2"
+                    ).value =
+                        teams[1].team_name;
+
+                }
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+                document.getElementById(
+                    "message"
+                ).textContent =
+                    "Unable to load teams.";
+
+            });
+
+    }
+
+
+
+    // =========================================
+    // SAVE TEAM
+    // =========================================
+
+    function saveTeam(index) {
+
+        const inputId =
+            index === 0
+                ? "team1"
+                : "team2";
+
+
+        const input =
+            document.getElementById(
+                inputId
+            );
+
+
+        const teamName =
+            input.value.trim();
+
+
+        if (!teamName) {
+
+            alert(
+                "Please enter a team name."
+            );
+
+            return;
+
+        }
+
+
+        fetch("/api/teams")
+
+            .then(response =>
+                response.json()
+            )
+
+            .then(teams => {
+
+                if (!teams[index]) {
+
+                    alert(
+                        "Team not found."
+                    );
+
+                    return;
+
+                }
+
+
+                return fetch(
+                    `/api/teams/${teams[index].id}`,
+                    {
+
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            team_name:
+                                teamName
+
+                        })
+
+                    }
+                );
+
+            })
+
+            .then(response => {
+
+                if (!response) {
+                    return;
+                }
+
+                return response.json();
+
+            })
+
+            .then(data => {
+
+                if (!data) {
+                    return;
+                }
+
+
+                if (data.error) {
+
+                    alert(data.error);
+
+                    return;
+
+                }
+
+
+                document.getElementById(
+                    "message"
+                ).textContent =
+                    "Team name updated successfully!";
+
+
+                loadTeams();
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+                document.getElementById(
+                    "message"
+                ).textContent =
+                    "Unable to update team.";
+
+            });
+
+    }
+
+
+
+    // =========================================
+    // START
+    // =========================================
+
+    loadTeams();
+
+
+</script>
+
+
+</body>
+
+</html>

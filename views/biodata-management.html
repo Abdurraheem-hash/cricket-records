@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Biodata Management - Cricket Records</title>
+
+<link
+    rel="stylesheet"
+    href="/css/style.css">
+
+
+</head>
+
+<body class="admin-dashboard-page">
+
+
+<!-- HEADER -->
+
+<header class="admin-dashboard-header">
+
+    <div>
+
+        <h1>🏏 CRICKET RECORDS</h1>
+
+        <p>Biodata Management</p>
+
+    </div>
+
+
+    <a href="/admin-dashboard">
+
+        <button
+            class="admin-logout-button"
+            style="background:#1976d2;">
+
+            BACK
+
+        </button>
+
+    </a>
+
+</header>
+
+
+
+<!-- MAIN -->
+
+<main class="admin-dashboard-container">
+
+
+    <!-- ADD PLAYER -->
+
+    <div class="admin-welcome">
+
+        <h2>Add Player Biodata</h2>
+
+        <p>
+            Add player name, photo, role and biography.
+        </p>
+
+    </div>
+
+
+    <div class="admin-dashboard-card">
+
+
+        <!-- NAME -->
+
+        <label for="playerName">
+            <strong>Player Name</strong>
+        </label>
+
+        <br><br>
+
+        <input
+            type="text"
+            id="playerName"
+            placeholder="Enter player name"
+            style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+
+        <br><br>
+
+
+        <!-- PHOTO -->
+
+        <label for="playerPhoto">
+            <strong>Photo URL</strong>
+        </label>
+
+        <br><br>
+
+        <input
+            type="text"
+            id="playerPhoto"
+            placeholder="Enter photo URL"
+            style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+
+        <br><br>
+
+
+        <!-- ROLE -->
+
+        <label for="playerRole">
+            <strong>Role</strong>
+        </label>
+
+        <br><br>
+
+        <select
+            id="playerRole"
+            style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+
+            <option value="">
+                Select Role
+            </option>
+
+            <option value="Batter">
+                Batter
+            </option>
+
+            <option value="Bowler">
+                Bowler
+            </option>
+
+            <option value="All-rounder">
+                All-rounder
+            </option>
+
+            <option value="Wicketkeeper">
+                Wicketkeeper
+            </option>
+
+        </select>
+
+        <br><br>
+
+
+        <!-- BIOGRAPHY -->
+
+        <label for="playerBiography">
+            <strong>Biography</strong>
+        </label>
+
+        <br><br>
+
+        <textarea
+            id="playerBiography"
+            rows="6"
+            placeholder="Enter short player biography"
+            style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; resize:vertical;"></textarea>
+
+        <br><br>
+
+
+        <!-- SAVE -->
+
+        <button onclick="addPlayer()">
+            SAVE PLAYER
+        </button>
+
+
+    </div>
+
+
+
+    <!-- EXISTING PLAYERS -->
+
+    <div
+        class="admin-welcome"
+        style="margin-top:50px;">
+
+        <h2>Existing Players</h2>
+
+        <p>
+            Players already added to the website.
+        </p>
+
+    </div>
+
+
+    <div id="playerList">
+
+        Loading players...
+
+    </div>
+
+
+
+    <!-- BACK -->
+
+    <div class="admin-back-section">
+
+        <a href="/admin-dashboard">
+            ← Back to Admin Dashboard
+        </a>
+
+    </div>
+
+
+</main>
+
+
+
+<script>
+
+
+    // =================================================
+    // LOAD PLAYERS
+    // =================================================
+
+    function loadPlayers() {
+
+        fetch("/api/biodata")
+
+            .then(response => response.json())
+
+            .then(players => {
+
+                const playerList =
+                    document.getElementById(
+                        "playerList"
+                    );
+
+
+                playerList.innerHTML = "";
+
+
+                if (players.length === 0) {
+
+                    playerList.innerHTML =
+                        `
+                        <div class="admin-dashboard-card">
+
+                            <p>
+                                No players added yet.
+                            </p>
+
+                        </div>
+                        `;
+
+                    return;
+
+                }
+
+
+                players.forEach(player => {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "admin-dashboard-card";
+
+
+                    card.style.marginBottom =
+                        "20px";
+
+
+                    let photoHTML = "";
+
+
+                    if (player.photo) {
+
+                        photoHTML = `
+                            <img
+                                src="${player.photo}"
+                                alt="${player.name}"
+                                style="
+                                    width:120px;
+                                    height:120px;
+                                    object-fit:cover;
+                                    border-radius:50%;
+                                    margin-bottom:15px;
+                                "
+                                onerror="this.style.display='none';"
+                            >
+                        `;
+
+                    }
+
+
+                    card.innerHTML = `
+
+                        ${photoHTML}
+
+                        <h3>
+                            ${player.name}
+                        </h3>
+
+                        <p>
+                            <strong>Role:</strong>
+                            ${player.role}
+                        </p>
+
+                        <p>
+                            ${
+                                player.biography ||
+                                "No biography added."
+                            }
+                        </p>
+
+                        <button
+                            onclick="deletePlayer(${player.id})"
+                            style="
+                                background:#d32f2f;
+                                margin-top:10px;
+                            ">
+                            DELETE
+                        </button>
+
+                    `;
+
+
+                    playerList.appendChild(card);
+
+                });
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+
+                document.getElementById(
+                    "playerList"
+                ).innerHTML =
+                    `
+                    <div class="admin-dashboard-card">
+
+                        <p>
+                            Failed to load players.
+                        </p>
+
+                    </div>
+                    `;
+
+            });
+
+    }
+
+
+
+    // =================================================
+    // ADD PLAYER
+    // =================================================
+
+    function addPlayer() {
+
+        const name =
+            document.getElementById(
+                "playerName"
+            ).value.trim();
+
+
+        const photo =
+            document.getElementById(
+                "playerPhoto"
+            ).value.trim();
+
+
+        const role =
+            document.getElementById(
+                "playerRole"
+            ).value;
+
+
+        const biography =
+            document.getElementById(
+                "playerBiography"
+            ).value.trim();
+
+
+
+        if (!name) {
+
+            alert(
+                "Please enter the player name."
+            );
+
+            return;
+
+        }
+
+
+        if (!role) {
+
+            alert(
+                "Please select the player role."
+            );
+
+            return;
+
+        }
+
+
+
+        fetch("/api/biodata", {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type":
+                    "application/json"
+
+            },
+
+            body: JSON.stringify({
+
+                name: name,
+
+                photo: photo || null,
+
+                role: role,
+
+                biography:
+                    biography || null
+
+            })
+
+        })
+
+            .then(response =>
+                response.json()
+            )
+
+            .then(data => {
+
+                if (data.error) {
+
+                    alert(data.error);
+
+                    return;
+
+                }
+
+
+                alert(
+                    "Player added successfully!"
+                );
+
+
+                document.getElementById(
+                    "playerName"
+                ).value = "";
+
+
+                document.getElementById(
+                    "playerPhoto"
+                ).value = "";
+
+
+                document.getElementById(
+                    "playerRole"
+                ).value = "";
+
+
+                document.getElementById(
+                    "playerBiography"
+                ).value = "";
+
+
+                loadPlayers();
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+
+                alert(
+                    "Something went wrong."
+                );
+
+            });
+
+    }
+
+
+
+    // =================================================
+    // DELETE PLAYER
+    // =================================================
+
+    function deletePlayer(id) {
+
+        const confirmDelete =
+            confirm(
+                "Are you sure you want to delete this player?"
+            );
+
+
+        if (!confirmDelete) {
+
+            return;
+
+        }
+
+
+
+        fetch(
+            `/api/biodata/${id}`,
+            {
+                method: "DELETE"
+            }
+        )
+
+            .then(response =>
+                response.json()
+            )
+
+            .then(data => {
+
+                if (data.error) {
+
+                    alert(data.error);
+
+                    return;
+
+                }
+
+
+                alert(
+                    "Player deleted successfully!"
+                );
+
+
+                loadPlayers();
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+
+                alert(
+                    "Something went wrong."
+                );
+
+            });
+
+    }
+
+
+
+    // =================================================
+    // LOAD PLAYERS WHEN PAGE OPENS
+    // =================================================
+
+    loadPlayers();
+
+</script>
+
+
+</body>
+
+</html>

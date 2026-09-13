@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Management - Cricket Records</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="admin-dashboard-page">
+
+<header class="admin-dashboard-header">
+    <div>
+        <h1>🏏 CRICKET RECORDS</h1>
+        <p>Match Management</p>
+    </div>
+
+    <a href="/admin-dashboard">
+        <button class="admin-logout-button" style="background:#1976d2;">
+            BACK
+        </button>
+    </a>
+</header>
+
+
+<main class="admin-dashboard-container">
+
+    <section class="admin-welcome">
+        <h2>Match Management</h2>
+        <p>Manage Match 1, Match 2 and Match 3.</p>
+    </section>
+
+
+    <!-- ADD MATCH -->
+    <section class="admin-dashboard-card">
+
+        <h3>Add Match</h3>
+
+        <label for="seriesSelect">
+            <strong>Select Series</strong>
+        </label>
+        <br><br>
+
+        <select id="seriesSelect"
+            style="width:100%;max-width:500px;padding:12px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box;font-size:16px;">
+            <option value="">Select Series</option>
+        </select>
+
+        <br><br>
+
+
+        <label for="matchNumber">
+            <strong>Match</strong>
+        </label>
+        <br><br>
+
+        <select id="matchNumber"
+            style="width:100%;max-width:500px;padding:12px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box;font-size:16px;">
+
+            <option value="">Select Match</option>
+            <option value="1">Match 1</option>
+            <option value="2">Match 2</option>
+            <option value="3">Match 3</option>
+
+        </select>
+
+        <br><br>
+
+
+        <label for="winner">
+            <strong>Match Winner</strong>
+        </label>
+        <br><br>
+
+        <select id="winner"
+            style="width:100%;max-width:500px;padding:12px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box;font-size:16px;">
+
+            <option value="">Select Winner</option>
+
+        </select>
+
+        <br><br>
+
+
+        <label for="matchDate">
+            <strong>Match Date</strong>
+            <span>(Optional)</span>
+        </label>
+        <br><br>
+
+        <input type="date"
+            id="matchDate"
+            style="width:100%;max-width:500px;padding:12px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box;font-size:16px;">
+
+        <br><br>
+
+        <button onclick="saveMatch()">
+            SAVE MATCH
+        </button>
+
+        <p id="message"
+            style="margin-top:15px;font-weight:bold;">
+        </p>
+
+    </section>
+
+
+    <!-- EXISTING MATCHES -->
+    <section class="admin-dashboard-card" style="margin-top:20px;">
+
+        <h3>Existing Matches</h3>
+
+        <div id="matchesList">
+            <p>Select a series to view matches.</p>
+        </div>
+
+    </section>
+
+
+    <div class="admin-back-section">
+        <a href="/admin-dashboard">
+            ← Back to Admin Dashboard
+        </a>
+    </div>
+
+</main>
+
+
+<script>
+
+let teams = [];
+
+
+// LOAD TEAMS
+async function loadTeams() {
+
+    try {
+
+        const response = await fetch("/api/teams");
+
+        if (!response.ok) {
+            throw new Error("Unable to load teams");
+        }
+
+        teams = await response.json();
+
+        const winnerSelect =
+            document.getElementById("winner");
+
+        winnerSelect.innerHTML =
+            `<option value="">Select Winner</option>`;
+
+        teams.forEach(team => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = team.team_name;
+
+            option.textContent =
+                team.team_name;
+
+            winnerSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").textContent =
+            "Unable to load team names.";
+
+    }
+
+}
+
+
+
+// LOAD SERIES
+async function loadSeries() {
+
+    try {
+
+        const response =
+            await fetch("/api/series");
+
+        if (!response.ok) {
+            throw new Error("Unable to load series");
+        }
+
+        const series =
+            await response.json();
+
+        const seriesSelect =
+            document.getElementById("seriesSelect");
+
+        seriesSelect.innerHTML =
+            `<option value="">Select Series</option>`;
+
+        series.forEach(item => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = item.id;
+
+            let seriesText =
+                "Series " + item.series_number;
+
+            if (item.cup_name) {
+                seriesText +=
+                    " - " + item.cup_name;
+            }
+
+            if (item.completed) {
+                seriesText +=
+                    " (Completed)";
+            }
+
+            option.textContent =
+                seriesText;
+
+            seriesSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").textContent =
+            "Unable to load series.";
+
+    }
+
+}
+
+
+
+// LOAD MATCHES
+async function loadMatches() {
+
+    const seriesId =
+        document.getElementById("seriesSelect").value;
+
+    const matchesList =
+        document.getElementById("matchesList");
+
+    if (!seriesId) {
+
+        matchesList.innerHTML =
+            `<p>Select a series to view matches.</p>`;
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/matches/series/${seriesId}`
+            );
+
+        if (!response.ok) {
+            throw new Error("Unable to load matches");
+        }
+
+        const matches =
+            await response.json();
+
+
+        if (matches.length === 0) {
+
+            matchesList.innerHTML =
+                `<p>No matches added for this series yet.</p>`;
+
+            return;
+        }
+
+
+        matchesList.innerHTML = "";
+
+
+        matches.forEach(match => {
+
+            const div =
+                document.createElement("div");
+
+            div.style.cssText =
+                `
+                border:1px solid #ddd;
+                border-radius:8px;
+                padding:15px;
+                margin-top:10px;
+                `;
+
+
+            let dateText =
+                "Date not recorded";
+
+            if (match.match_date) {
+
+                dateText =
+                    new Date(
+                        match.match_date
+                    ).toLocaleDateString();
+
+            }
+
+
+            let resultText = "";
+
+
+            if (match.status === "NOT PLAYED") {
+
+                resultText =
+                    `<strong>NOT PLAYED</strong>`;
+
+            } else {
+
+                resultText =
+                    `Winner:
+                    <strong>${match.winner}</strong>`;
+
+            }
+
+
+            div.innerHTML =
+                `
+                <strong>
+                    Match ${match.match_number}
+                </strong>
+
+                <br><br>
+
+                ${resultText}
+
+                <br>
+
+                Date:
+                ${dateText}
+                `;
+
+
+            matchesList.appendChild(div);
+
+        });
+
+
+        updateMatch3Availability(matches);
+
+    } catch (error) {
+
+        console.error(error);
+
+        matchesList.innerHTML =
+            `<p>Unable to load matches.</p>`;
+
+    }
+
+}
+
+
+
+// CONTROL MATCH 3
+function updateMatch3Availability(matches) {
+
+    const matchNumber =
+        document.getElementById("matchNumber");
+
+    const match3Option =
+        matchNumber.querySelector(
+            'option[value="3"]'
+        );
+
+
+    const match1 =
+        matches.find(
+            match =>
+                Number(match.match_number) === 1
+        );
+
+    const match2 =
+        matches.find(
+            match =>
+                Number(match.match_number) === 2
+        );
+
+
+    // Match 3 already exists
+    if (
+        matches.some(
+            match =>
+                Number(match.match_number) === 3
+        )
+    ) {
+
+        match3Option.disabled = true;
+
+        return;
+    }
+
+
+    // If Match 1 and Match 2 have same winner,
+    // Match 3 will automatically be NOT PLAYED.
+    if (
+        match1 &&
+        match2 &&
+        match1.winner &&
+        match2.winner &&
+        match1.winner === match2.winner
+    ) {
+
+        match3Option.disabled = true;
+
+    } else {
+
+        match3Option.disabled = false;
+
+    }
+
+}
+
+
+
+// SAVE MATCH
+async function saveMatch() {
+
+    const seriesId =
+        document.getElementById("seriesSelect").value;
+
+    const matchNumber =
+        document.getElementById("matchNumber").value;
+
+    const winner =
+        document.getElementById("winner").value;
+
+    const matchDate =
+        document.getElementById("matchDate").value;
+
+    const message =
+        document.getElementById("message");
+
+
+    if (!seriesId) {
+
+        message.textContent =
+            "Please select a series.";
+
+        return;
+    }
+
+
+    if (!matchNumber) {
+
+        message.textContent =
+            "Please select a match.";
+
+        return;
+    }
+
+
+    if (!winner) {
+
+        message.textContent =
+            "Please select the match winner.";
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/matches",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        series_id:
+                            seriesId,
+
+                        match_number:
+                            Number(matchNumber),
+
+                        winner:
+                            winner,
+
+                        match_date:
+                            matchDate || null
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            message.textContent =
+                data.error ||
+                "Failed to save match.";
+
+            return;
+        }
+
+
+        message.textContent =
+            data.message ||
+            "Match saved successfully!";
+
+
+        document.getElementById(
+            "matchNumber"
+        ).value = "";
+
+
+        document.getElementById(
+            "winner"
+        ).value = "";
+
+
+        document.getElementById(
+            "matchDate"
+        ).value = "";
+
+
+        await loadMatches();
+
+        await loadSeries();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Something went wrong while saving the match.";
+
+    }
+
+}
+
+
+
+// SERIES CHANGED
+document.getElementById(
+    "seriesSelect"
+).addEventListener(
+    "change",
+    loadMatches
+);
+
+
+// START
+loadTeams();
+loadSeries();
+
+</script>
+
+</body>
+</html>

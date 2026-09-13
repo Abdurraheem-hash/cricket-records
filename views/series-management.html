@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Series Management - Cricket Records</title>
+
+<link
+    rel="stylesheet"
+    href="/css/style.css">
+
+
+</head>
+
+<body class="admin-dashboard-page">
+
+
+<!-- HEADER -->
+
+<header class="admin-dashboard-header">
+
+    <div>
+
+        <h1>🏏 CRICKET RECORDS</h1>
+
+        <p>Series Management</p>
+
+    </div>
+
+
+    <a href="/admin-dashboard">
+
+        <button
+            class="admin-logout-button"
+            style="background:#1976d2;">
+
+            BACK
+
+        </button>
+
+    </a>
+
+</header>
+
+
+
+<main class="admin-dashboard-container">
+
+
+    <!-- CREATE SERIES -->
+
+    <div class="admin-welcome">
+
+        <h2>Create Series</h2>
+
+        <p>
+            Add a new series to a cup.
+        </p>
+
+    </div>
+
+
+    <div class="admin-dashboard-card">
+
+
+        <label for="cupSelect">
+
+            <strong>Select Cup</strong>
+
+        </label>
+
+
+        <br><br>
+
+
+        <select
+            id="cupSelect"
+            style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px;">
+
+            <option value="">
+                Select Cup
+            </option>
+
+        </select>
+
+
+        <br><br>
+
+
+        <label for="seriesNumber">
+
+            <strong>Series Number</strong>
+
+        </label>
+
+
+        <br><br>
+
+
+        <input
+            type="number"
+            id="seriesNumber"
+            placeholder="Example: 1"
+            min="1"
+            style="width:100%; padding:12px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+
+
+        <br><br>
+
+
+        <button onclick="createSeries()">
+
+            CREATE SERIES
+
+        </button>
+
+
+        <p
+            id="message"
+            style="margin-top:15px;font-weight:bold;">
+        </p>
+
+
+    </div>
+
+
+
+    <!-- EXISTING SERIES -->
+
+    <div
+        class="admin-welcome"
+        style="margin-top:50px;">
+
+        <h2>Existing Series</h2>
+
+        <p>
+            Series results are calculated automatically
+            from Match 1, Match 2 and Match 3.
+        </p>
+
+    </div>
+
+
+    <div id="seriesList">
+
+        Loading series...
+
+    </div>
+
+
+
+    <!-- BACK -->
+
+    <div class="admin-back-section">
+
+        <a href="/admin-dashboard">
+
+            ← Back to Admin Dashboard
+
+        </a>
+
+    </div>
+
+
+</main>
+
+
+
+<script>
+
+
+    // ============================================
+    // LOAD CUPS
+    // ============================================
+
+    function loadCups() {
+
+        fetch("/api/cups")
+
+            .then(response => response.json())
+
+            .then(cups => {
+
+                const cupSelect =
+                    document.getElementById("cupSelect");
+
+
+                cupSelect.innerHTML =
+                    '<option value="">Select Cup</option>';
+
+
+                cups.forEach(cup => {
+
+                    const option =
+                        document.createElement("option");
+
+
+                    option.value =
+                        cup.id;
+
+
+                    option.textContent =
+                        "Cup " +
+                        cup.cup_number +
+                        " - " +
+                        cup.cup_name;
+
+
+                    cupSelect.appendChild(option);
+
+                });
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+                document.getElementById("message").textContent =
+                    "Unable to load cups.";
+
+            });
+
+    }
+
+
+
+    // ============================================
+    // CREATE SERIES
+    // ============================================
+
+    function createSeries() {
+
+        const cupId =
+            document.getElementById("cupSelect").value;
+
+
+        const seriesNumber =
+            document.getElementById("seriesNumber").value;
+
+
+        const message =
+            document.getElementById("message");
+
+
+        if (!cupId) {
+
+            message.textContent =
+                "Please select a cup.";
+
+            return;
+
+        }
+
+
+        if (!seriesNumber) {
+
+            message.textContent =
+                "Please enter series number.";
+
+            return;
+
+        }
+
+
+        fetch("/api/series", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                cup_id: cupId,
+
+                series_number:
+                    Number(seriesNumber)
+
+            })
+
+        })
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            if (data.error) {
+
+                message.textContent =
+                    data.error;
+
+                return;
+
+            }
+
+
+            message.textContent =
+                "Series created successfully!";
+
+
+            document.getElementById(
+                "seriesNumber"
+            ).value = "";
+
+
+            loadSeries();
+
+        })
+
+        .catch(error => {
+
+            console.error(error);
+
+            message.textContent =
+                "Something went wrong.";
+
+        });
+
+    }
+
+
+
+    // ============================================
+    // LOAD SERIES
+    // ============================================
+
+    function loadSeries() {
+
+        fetch("/api/series")
+
+            .then(response => response.json())
+
+            .then(series => {
+
+
+                const list =
+                    document.getElementById(
+                        "seriesList"
+                    );
+
+
+                list.innerHTML = "";
+
+
+                if (series.length === 0) {
+
+                    list.innerHTML =
+                        "<p>No series created yet.</p>";
+
+                    return;
+
+                }
+
+
+                series.forEach(item => {
+
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "admin-dashboard-card";
+
+
+                    card.style.marginBottom =
+                        "20px";
+
+
+                    let statusText =
+                        "In Progress";
+
+
+                    if (item.completed) {
+
+                        statusText =
+                            "Completed";
+
+                    }
+
+
+                    card.innerHTML = `
+
+                        <h3>
+                            Series ${item.series_number}
+                        </h3>
+
+                        <p>
+                            Cup:
+                            <strong>
+                                ${item.cup_name || "No Cup"}
+                            </strong>
+                        </p>
+
+                        <p>
+                            Team A Wins:
+                            <strong>
+                                ${item.team_a_wins || 0}
+                            </strong>
+                        </p>
+
+                        <p>
+                            Team B Wins:
+                            <strong>
+                                ${item.team_b_wins || 0}
+                            </strong>
+                        </p>
+
+                        <p>
+                            Series Winner:
+                            <strong>
+                                ${item.winner || "Not decided"}
+                            </strong>
+                        </p>
+
+                        <p>
+                            Status:
+                            <strong>
+                                ${statusText}
+                            </strong>
+                        </p>
+
+                    `;
+
+
+                    list.appendChild(card);
+
+                });
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+
+                document.getElementById(
+                    "seriesList"
+                ).innerHTML =
+                    "<p>Unable to load series.</p>";
+
+            });
+
+    }
+
+
+
+    // ============================================
+    // LOAD DATA
+    // ============================================
+
+    loadCups();
+
+    loadSeries();
+
+</script>
+
+</body>
+
+</html>

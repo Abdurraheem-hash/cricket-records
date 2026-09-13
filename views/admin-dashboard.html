@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+ name="viewport"
+ content="width=device-width, initial-scale=1.0">
+
+<title>Admin Dashboard - Cricket Records</title>
+
+<link
+    rel="stylesheet"
+    href="/css/style.css">
+
+</head>
+
+<body class="admin-dashboard-page">
+
+<!-- HEADER -->
+
+<header class="admin-dashboard-header">
+
+```
+<div>
+
+    <h1>🏏 CRICKET RECORDS</h1>
+
+    <p>Admin Dashboard</p>
+
+</div>
+
+
+<button
+    id="logoutButton"
+    class="admin-logout-button">
+
+    LOGOUT
+
+</button>
+```
+
+</header>
+
+<!-- MAIN -->
+
+<main class="admin-dashboard-container">
+
+```
+<!-- WELCOME -->
+
+<section class="admin-welcome">
+
+    <h2>
+        Welcome,
+        <span id="adminUsername">Admin</span>
+    </h2>
+
+    <p>
+        Manage your cricket records from this dashboard.
+    </p>
+
+</section>
+
+
+
+<!-- DASHBOARD CARDS -->
+
+<section class="admin-dashboard-grid">
+
+
+    <!-- CUP MANAGEMENT -->
+
+    <div class="admin-dashboard-card">
+
+        <div class="admin-card-icon">
+            🏆
+        </div>
+
+        <h3>Cup Management</h3>
+
+        <p>
+            Create and manage cups.
+        </p>
+
+        <button
+            onclick="window.location.href='/cup-management'">
+
+            MANAGE
+
+        </button>
+
+    </div>
+
+
+
+    <!-- SERIES MANAGEMENT -->
+
+    <div class="admin-dashboard-card">
+
+        <div class="admin-card-icon">
+            📋
+        </div>
+
+        <h3>Series Management</h3>
+
+        <p>
+            Create and manage series.
+        </p>
+
+        <button
+            onclick="window.location.href='/series-management'">
+
+            MANAGE
+
+        </button>
+
+    </div>
+
+
+
+    <!-- MATCH MANAGEMENT -->
+
+    <div class="admin-dashboard-card">
+
+        <div class="admin-card-icon">
+            🏏
+        </div>
+
+        <h3>Match Management</h3>
+
+        <p>
+            Add, edit and delete matches.
+        </p>
+
+        <button
+            onclick="window.location.href='/match-management'">
+
+            MANAGE
+
+        </button>
+
+    </div>
+
+
+
+    <!-- BIODATA -->
+
+    <div class="admin-dashboard-card">
+
+        <div class="admin-card-icon">
+            👤
+        </div>
+
+        <h3>Biodata</h3>
+
+        <p>
+            Manage player biographies.
+        </p>
+
+        <button
+            onclick="window.location.href='/biodata-management'">
+
+            MANAGE
+
+        </button>
+
+    </div>
+
+
+
+    <!-- ADMIN ACCOUNT -->
+
+    <div class="admin-dashboard-card">
+
+        <div class="admin-card-icon">
+            🔐
+        </div>
+
+        <h3>Admin Account</h3>
+
+        <p>
+            Change username and password.
+        </p>
+
+        <button>
+            MANAGE
+        </button>
+
+    </div>
+
+
+</section>
+
+
+
+<!-- ========================================= -->
+<!-- TEAM SETTINGS -->
+<!-- ========================================= -->
+
+<section
+    class="admin-dashboard-card"
+    style="
+        margin-top:30px;
+        width:100%;
+        box-sizing:border-box;
+    ">
+
+
+    <div class="admin-card-icon">
+        👥
+    </div>
+
+
+    <h3>
+        Team Settings
+    </h3>
+
+
+    <p>
+        Change the names of the two teams.
+    </p>
+
+
+
+    <!-- TEAM 1 -->
+
+    <div style="margin-top:20px;">
+
+        <label for="team1">
+
+            <strong>
+                Team 1
+            </strong>
+
+        </label>
+
+        <br><br>
+
+        <input
+            type="text"
+            id="team1"
+            placeholder="Enter Team 1 name"
+            style="
+                width:100%;
+                max-width:500px;
+                padding:12px;
+                border:1px solid #ccc;
+                border-radius:6px;
+                box-sizing:border-box;
+                font-size:16px;
+            ">
+
+    </div>
+
+
+
+    <!-- TEAM 2 -->
+
+    <div style="margin-top:20px;">
+
+        <label for="team2">
+
+            <strong>
+                Team 2
+            </strong>
+
+        </label>
+
+        <br><br>
+
+        <input
+            type="text"
+            id="team2"
+            placeholder="Enter Team 2 name"
+            style="
+                width:100%;
+                max-width:500px;
+                padding:12px;
+                border:1px solid #ccc;
+                border-radius:6px;
+                box-sizing:border-box;
+                font-size:16px;
+            ">
+
+    </div>
+
+
+
+    <!-- SAVE -->
+
+    <button
+        onclick="saveTeamNames()"
+        style="margin-top:20px;">
+
+        SAVE TEAM NAMES
+
+    </button>
+
+
+
+    <!-- MESSAGE -->
+
+    <p
+        id="teamMessage"
+        style="
+            margin-top:15px;
+            font-weight:bold;
+        ">
+    </p>
+
+
+</section>
+
+
+
+<!-- BACK TO WEBSITE -->
+
+<div class="admin-back-section">
+
+    <a href="/">
+        ← Back to Website
+    </a>
+
+</div>
+
+
+</main>
+
+<script>
+
+
+// =================================================
+// CHECK LOGIN
+// =================================================
+
+async function checkLogin() {
+
+    try {
+
+        const response =
+            await fetch("/api/admin/session");
+
+
+        if (!response.ok) {
+
+            window.location.href =
+                "/admin-login";
+
+            return;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        document.getElementById(
+            "adminUsername"
+        ).textContent =
+            data.username;
+
+
+    } catch (error) {
+
+        window.location.href =
+            "/admin-login";
+
+    }
+
+}
+
+
+
+// =================================================
+// LOGOUT
+// =================================================
+
+document.getElementById(
+    "logoutButton"
+).addEventListener(
+    "click",
+    async function () {
+
+        await fetch(
+            "/api/admin/logout",
+            {
+                method: "POST"
+            }
+        );
+
+
+        window.location.href =
+            "/admin-login";
+
+    }
+);
+
+
+
+// =================================================
+// LOAD TEAMS
+// =================================================
+
+async function loadTeams() {
+
+    try {
+
+        const response =
+            await fetch("/api/teams");
+
+
+        if (!response.ok) {
+
+            document.getElementById(
+                "teamMessage"
+            ).textContent =
+                "Unable to load teams.";
+
+            return;
+
+        }
+
+
+        const teams =
+            await response.json();
+
+
+        if (teams.length < 2) {
+
+            document.getElementById(
+                "teamMessage"
+            ).textContent =
+                "Two teams are required.";
+
+            return;
+
+        }
+
+
+        document.getElementById(
+            "team1"
+        ).value =
+            teams[0].team_name;
+
+
+        document.getElementById(
+            "team2"
+        ).value =
+            teams[1].team_name;
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById(
+            "teamMessage"
+        ).textContent =
+            "Unable to load team information.";
+
+    }
+
+}
+
+
+
+// =================================================
+// SAVE TEAM NAMES
+// =================================================
+
+async function saveTeamNames() {
+
+    const team1 =
+        document.getElementById(
+            "team1"
+        ).value.trim();
+
+
+    const team2 =
+        document.getElementById(
+            "team2"
+        ).value.trim();
+
+
+    const message =
+        document.getElementById(
+            "teamMessage"
+        );
+
+
+    if (!team1 || !team2) {
+
+        message.textContent =
+            "Please enter both team names.";
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch("/api/teams");
+
+
+        const teams =
+            await response.json();
+
+
+        if (teams.length < 2) {
+
+            message.textContent =
+                "Two teams are required.";
+
+            return;
+
+        }
+
+
+
+        // UPDATE TEAM 1
+
+        const updateTeam1 =
+            await fetch(
+                `/api/teams/${teams[0].id}`,
+                {
+
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        team_name:
+                            team1
+
+                    })
+
+                }
+            );
+
+
+        if (!updateTeam1.ok) {
+
+            const error =
+                await updateTeam1.json();
+
+            message.textContent =
+                error.error ||
+                "Failed to update Team 1.";
+
+            return;
+
+        }
+
+
+
+        // UPDATE TEAM 2
+
+        const updateTeam2 =
+            await fetch(
+                `/api/teams/${teams[1].id}`,
+                {
+
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        team_name:
+                            team2
+
+                    })
+
+                }
+            );
+
+
+        if (!updateTeam2.ok) {
+
+            const error =
+                await updateTeam2.json();
+
+            message.textContent =
+                error.error ||
+                "Failed to update Team 2.";
+
+            return;
+
+        }
+
+
+
+        message.textContent =
+            "Team names updated successfully!";
+
+
+        // Reload the names
+
+        loadTeams();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Something went wrong.";
+
+    }
+
+}
+
+
+
+// =================================================
+// START
+// =================================================
+
+checkLogin();
+
+loadTeams();
+
+
+</script>
+
+</body>
+
+</html>

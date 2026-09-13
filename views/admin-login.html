@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Login - Cricket Records</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="admin-login-page">
+
+    <div class="admin-login-container">
+
+        <div class="admin-login-card">
+
+            <div class="admin-login-icon">
+                🏏
+            </div>
+
+            <h1>CRICKET RECORDS</h1>
+
+            <h2>ADMIN LOGIN</h2>
+
+            <p class="admin-login-subtitle">
+                Authorized administrators only
+            </p>
+
+            <form id="loginForm">
+
+                <div class="form-group">
+
+                    <label for="username">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter username"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter password"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="admin-login-button">
+                    LOGIN
+                </button>
+
+            </form>
+
+
+            <p
+                id="loginMessage"
+                class="login-message">
+            </p>
+
+
+            <a
+                href="/"
+                class="back-home">
+                ← Back to Website
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const loginForm =
+            document.getElementById("loginForm");
+
+        const loginMessage =
+            document.getElementById("loginMessage");
+
+
+        loginForm.addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const username =
+                document.getElementById("username").value;
+
+            const password =
+                document.getElementById("password").value;
+
+
+            loginMessage.textContent =
+                "Checking login...";
+
+
+            try {
+
+                const response =
+                    await fetch("/api/admin/login", {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            username,
+                            password
+                        })
+
+                    });
+
+
+                const data =
+                    await response.json();
+
+
+                if (response.ok) {
+
+                    loginMessage.textContent =
+                        "Login successful!";
+
+                    window.location.href =
+                        "/admin-dashboard";
+
+                } else {
+
+                    loginMessage.textContent =
+                        data.error || "Login failed.";
+
+                }
+
+            } catch (error) {
+
+                loginMessage.textContent =
+                    "Unable to connect to server.";
+
+                console.error(error);
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
