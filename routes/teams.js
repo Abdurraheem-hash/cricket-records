@@ -1,270 +1,329 @@
 const express = require("express");
+
 const router = express.Router();
+
 const db = require("../db");
 
-// =========================================
+
+// =====================================================
 // GET ALL TEAMS
-// =========================================
+// =====================================================
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
 
-    const sql = "SELECT * FROM teams";
+    try {
 
-    db.query(sql, (err, results) => {
+        const result = await db.query(`
+            SELECT id, team_name
+            FROM teams
+            ORDER BY id ASC
+        `);
 
-        if (err) {
-            return res.status(500).json({
-                error: err.message
-            });
-        }
+        res.json(result.rows);
 
-        res.json(results);
+    } catch (error) {
 
-    });
+        console.error("Get teams error:", error);
 
-});
-
-
-// =========================================
-// ADD NEW TEAM
-// =========================================
-
-router.post("/", (req, res) => {
-
-    const { team_name } = req.body;
-
-    if (!team_name) {
-
-        return res.status(400).json({
-            error: "Team name is required"
+        res.status(500).json({
+            error: "Unable to load teams."
         });
 
     }
 
-    const sql =
-        "INSERT INTO teams (team_name) VALUES (?)";
-
-    db.query(
-        sql,
-        [team_name],
-        (err, result) => {
-
-            if (err) {
-
-                return res.status(500).json({
-                    error: err.message
-                });
-
-            }
-
-            res.json({
-                message: "Team added successfully",
-                id: result.insertId
-            });
-
-        }
-    );
-
 });
 
 
-// =========================================
-// UPDATE TEAM
-// =========================================
+// =====================================================
+// UPDATE TEAM NAME
+// =====================================================
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
+
+    const teamId = req.params.id;
 
     const { team_name } = req.body;
-    const { id } = req.params;
 
-    if (!team_name) {
+
+    if (!team_name || !team_name.trim()) {
 
         return res.status(400).json({
-            error: "Team name is required"
+            error: "Team name is required."
         });
 
     }
 
 
-    // First get the old team name
-    const getOldTeamSql =
-        "SELECT team_name FROM teams WHERE id = ?";
+    const newTeamName = team_name.trim();
 
 
-    db.query(
-        getOldTeamSql,
-        [id],
-        (err, results) => {
+    try {
 
-            if (err) {
+        // ---------------------------------------------
+        // Get old team name
+        // ---------------------------------------------
 
-                return res.status(500).json({
-                    error: err.message
-                });
-
-            }
-
-
-            if (results.length === 0) {
-
-                return res.status(404).json({
-                    error: "Team not found"
-                });
-
-            }
+        const oldTeamResult = await db.query(
+            `
+            SELECT team_name
+            FROM teams
+            WHERE id = $1
+            `,
+            [teamId]
+        );
 
 
-            const oldTeamName =
-                results[0].team_name;
+        if (oldTeamResult.rows.length === 0) {
 
-
-            // Update team name
-            const updateTeamSql =
-                "UPDATE teams SET team_name = ? WHERE id = ?";
-
-
-            db.query(
-                updateTeamSql,
-                [team_name, id],
-                (err) => {
-
-                    if (err) {
-
-                        return res.status(500).json({
-                            error: err.message
-                        });
-
-                    }
-
-
-                    // Update old match winners
-                    const updateMatchesSql = `
-                        UPDATE matches
-                        SET winner = ?
-                        WHERE winner = ?
-                    `;
-
-
-                    db.query(
-                        updateMatchesSql,
-                        [
-                            team_name,
-                            oldTeamName
-                        ],
-                        (err) => {
-
-                            if (err) {
-
-                                return res.status(500).json({
-                                    error: err.message
-                                });
-
-                            }
-
-
-                            // Update old series winners
-                            const updateSeriesSql = `
-                                UPDATE series
-                                SET winner = ?
-                                WHERE winner = ?
-                            `;
-
-
-                            db.query(
-                                updateSeriesSql,
-                                [
-                                    team_name,
-                                    oldTeamName
-                                ],
-                                (err) => {
-
-                                    if (err) {
-
-                                        return res.status(500).json({
-                                            error: err.message
-                                        });
-
-                                    }
-
-
-                                    // Update old cup winners
-                                    const updateCupsSql = `
-                                        UPDATE cups
-                                        SET winner = ?
-                                        WHERE winner = ?
-                                    `;
-
-
-                                    db.query(
-                                        updateCupsSql,
-                                        [
-                                            team_name,
-                                            oldTeamName
-                                        ],
-                                        (err) => {
-
-                                            if (err) {
-
-                                                return res.status(500).json({
-                                                    error: err.message
-                                                });
-
-                                            }
-
-
-                                            res.json({
-                                                message:
-                                                    "Team name and historical records updated successfully"
-                                            });
-
-                                        }
-                                    );
-
-                                }
-                            );
-
-                        }
-                    );
-
-                }
-            );
+            return res.status(404).json({
+                error: "Team not found."
+            });
 
         }
-    );
+
+
+        const oldTeamName =
+            oldTeamResult.rows[0].team_name;
+
+
+        // ---------------------------------------------
+        // Check duplicate team name
+        // ---------------------------------------------
+
+        const duplicateResult = await db.query(
+            `
+            SELECT id
+            FROM teams
+            WHERE LOWER(team_name) = LOWER($1)
+            AND id <> $2
+            `,
+            [
+                newTeamName,
+                teamId
+            ]
+        );
+
+
+        if (duplicateResult.rows.length > 0) {
+
+            return res.status(400).json({
+                error: "That team name is already being used."
+            });
+
+        }
+
+
+        // ---------------------------------------------
+        // Update team
+        // ---------------------------------------------
+
+        await db.query(
+            `
+            UPDATE teams
+            SET team_name = $1
+            WHERE id = $2
+            `,
+            [
+                newTeamName,
+                teamId
+            ]
+        );
+
+
+        // ---------------------------------------------
+        // Update old records
+        //
+        // This is important because your existing
+        // tables store winner names as text.
+        // ---------------------------------------------
+
+        await db.query(
+            `
+            UPDATE matches
+            SET winner = $1
+            WHERE winner = $2
+            `,
+            [
+                newTeamName,
+                oldTeamName
+            ]
+        );
+
+
+        await db.query(
+            `
+            UPDATE series
+            SET winner = $1
+            WHERE winner = $2
+            `,
+            [
+                newTeamName,
+                oldTeamName
+            ]
+        );
+
+
+        await db.query(
+            `
+            UPDATE cups
+            SET winner = $1
+            WHERE winner = $2
+            `,
+            [
+                newTeamName,
+                oldTeamName
+            ]
+        );
+
+
+        // ---------------------------------------------
+        // Success
+        // ---------------------------------------------
+
+        res.json({
+
+            message:
+                "Team name updated successfully.",
+
+            oldName:
+                oldTeamName,
+
+            newName:
+                newTeamName
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Update team error:",
+            error
+        );
+
+
+        res.status(500).json({
+            error: "Unable to update team name."
+        });
+
+    }
 
 });
 
 
-// =========================================
+// =====================================================
+// ADD TEAM
+// =====================================================
+
+router.post("/", async (req, res) => {
+
+    const { team_name } = req.body;
+
+
+    if (!team_name || !team_name.trim()) {
+
+        return res.status(400).json({
+            error: "Team name is required."
+        });
+
+    }
+
+
+    try {
+
+        const result = await db.query(
+            `
+            INSERT INTO teams (team_name)
+            VALUES ($1)
+            RETURNING id, team_name
+            `,
+            [
+                team_name.trim()
+            ]
+        );
+
+
+        res.status(201).json({
+
+            message:
+                "Team added successfully.",
+
+            team:
+                result.rows[0]
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Add team error:",
+            error
+        );
+
+
+        res.status(500).json({
+            error: "Unable to add team."
+        });
+
+    }
+
+});
+
+
+// =====================================================
 // DELETE TEAM
-// =========================================
+// =====================================================
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
 
-    const { id } = req.params;
+    const teamId = req.params.id;
 
-    const sql =
-        "DELETE FROM teams WHERE id = ?";
 
-    db.query(
-        sql,
-        [id],
-        (err, result) => {
+    try {
 
-            if (err) {
+        const result = await db.query(
+            `
+            DELETE FROM teams
+            WHERE id = $1
+            RETURNING id
+            `,
+            [
+                teamId
+            ]
+        );
 
-                return res.status(500).json({
-                    error: err.message
-                });
 
-            }
+        if (result.rows.length === 0) {
 
-            res.json({
-                message: "Team deleted successfully"
+            return res.status(404).json({
+                error: "Team not found."
             });
 
         }
-    );
+
+
+        res.json({
+
+            message:
+                "Team deleted successfully."
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Delete team error:",
+            error
+        );
+
+
+        res.status(500).json({
+            error: "Unable to delete team."
+        });
+
+    }
 
 });
 

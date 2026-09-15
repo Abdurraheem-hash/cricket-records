@@ -9,25 +9,31 @@ const db = require("../db");
 // GET ADMIN ACCOUNT
 // =====================================================
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
 
-    const sql = `
-        SELECT id, username, security_question
-        FROM admin
-        LIMIT 1
-    `;
+    try {
 
-    db.query(sql, (err, results) => {
+        const result = await db.query(`
+            SELECT
+                id,
+                username,
+                security_question
+            FROM admin
+            ORDER BY id ASC
+            LIMIT 1
+        `);
 
-        if (err) {
-            return res.status(500).json({
-                error: err.message
-            });
-        }
+        res.json(result.rows);
 
-        res.json(results);
+    } catch (error) {
 
-    });
+        console.error("Get admin error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
 
 });
 
@@ -46,7 +52,7 @@ router.post("/", async (req, res) => {
     } = req.body;
 
 
-    if (!username || !password) {
+    if (!username || !username.trim() || !password) {
 
         return res.status(400).json({
             error: "Username and password are required"
@@ -61,7 +67,7 @@ router.post("/", async (req, res) => {
             await bcrypt.hash(password, 12);
 
 
-        const sql = `
+        const result = await db.query(`
             INSERT INTO admin
             (
                 username,
@@ -69,41 +75,33 @@ router.post("/", async (req, res) => {
                 security_question,
                 security_answer
             )
-            VALUES (?, ?, ?, ?)
-        `;
+            VALUES
+            ($1, $2, $3, $4)
+            RETURNING id
+        `, [
+            username.trim(),
+            hashedPassword,
+            security_question || null,
+            security_answer || null
+        ]);
 
 
-        db.query(
-            sql,
-            [
-                username,
-                hashedPassword,
-                security_question || null,
-                security_answer || null
-            ],
-            (err, result) => {
+        res.status(201).json({
 
-                if (err) {
+            message:
+                "Admin account created successfully",
 
-                    return res.status(500).json({
-                        error: err.message
-                    });
+            id:
+                result.rows[0].id
 
-                }
-
-
-                res.json({
-                    message: "Admin account created successfully",
-                    id: result.insertId
-                });
-
-            }
-        );
+        });
 
     } catch (error) {
 
+        console.error("Create admin error:", error);
+
         res.status(500).json({
-            error: "Unable to create admin account"
+            error: error.message
         });
 
     }
@@ -115,7 +113,7 @@ router.post("/", async (req, res) => {
 // LOGIN
 // =====================================================
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
 
     const {
         username,
@@ -132,80 +130,68 @@ router.post("/login", (req, res) => {
     }
 
 
-    const sql = `
-        SELECT *
-        FROM admin
-        WHERE username = ?
-        LIMIT 1
-    `;
+    try {
+
+        const result = await db.query(`
+            SELECT *
+            FROM admin
+            WHERE username = $1
+            LIMIT 1
+        `, [
+            username.trim()
+        ]);
 
 
-    db.query(
-        sql,
-        [username],
-        async (err, results) => {
+        if (result.rows.length === 0) {
 
-            if (err) {
-
-                return res.status(500).json({
-                    error: err.message
-                });
-
-            }
-
-
-            if (results.length === 0) {
-
-                return res.status(401).json({
-                    error: "Invalid username or password"
-                });
-
-            }
-
-
-            const admin = results[0];
-
-
-            try {
-
-                const passwordMatch =
-                    await bcrypt.compare(
-                        password,
-                        admin.password
-                    );
-
-
-                if (!passwordMatch) {
-
-                    return res.status(401).json({
-                        error: "Invalid username or password"
-                    });
-
-                }
-
-
-                req.session.adminId =
-                    admin.id;
-
-                req.session.username =
-                    admin.username;
-
-
-                res.json({
-                    message: "Login successful"
-                });
-
-
-            } catch (error) {
-
-                res.status(500).json({
-                    error: "Login failed"
-                });
-
-            }
+            return res.status(401).json({
+                error: "Invalid username or password"
+            });
 
         }
-    );
+
+
+        const admin =
+            result.rows[0];
+
+
+        const passwordMatch =
+            await bcrypt.compare(
+                password,
+                admin.password
+            );
+
+
+        if (!passwordMatch) {
+
+            return res.status(401).json({
+                error: "Invalid username or password"
+            });
+
+        }
+
+
+        req.session.adminId =
+            admin.id;
+
+        req.session.username =
+            admin.username;
+
+
+        res.json({
+            message: "Login successful"
+        });
+
+
+    } catch (error) {
+
+        console.error("Login error:", error);
+
+        res.status(500).json({
+            error: "Login failed"
+        });
+
+    }
 
 });
 
@@ -226,8 +212,12 @@ router.get("/session", (req, res) => {
 
 
     res.json({
+
         loggedIn: true,
-        username: req.session.username
+
+        username:
+            req.session.username
+
     });
 
 });
@@ -242,6 +232,11 @@ router.post("/logout", (req, res) => {
     req.session.destroy((err) => {
 
         if (err) {
+
+            console.error(
+                "Logout error:",
+                err
+            );
 
             return res.status(500).json({
                 error: "Logout failed"
@@ -273,84 +268,129 @@ router.put("/:id", async (req, res) => {
     } = req.body;
 
 
+    if (!username || !username.trim()) {
+
+        return res.status(400).json({
+            error: "Username is required"
+        });
+
+    }
+
+
     try {
 
-        let sql;
-        let values;
+        let result;
 
+
+        // -------------------------------------------------
+        // UPDATE WITH PASSWORD
+        // -------------------------------------------------
 
         if (password) {
 
             const hashedPassword =
-                await bcrypt.hash(password, 12);
+                await bcrypt.hash(
+                    password,
+                    12
+                );
 
 
-            sql = `
+            result = await db.query(`
                 UPDATE admin
                 SET
-                    username = ?,
-                    password = ?,
-                    security_question = ?,
-                    security_answer = ?
-                WHERE id = ?
-            `;
+                    username = $1,
+                    password = $2,
+                    security_question = $3,
+                    security_answer = $4
+                WHERE id = $5
+                RETURNING id, username
+            `, [
 
+                username.trim(),
 
-            values = [
-                username,
                 hashedPassword,
+
                 security_question || null,
+
                 security_answer || null,
+
                 req.params.id
-            ];
 
-        } else {
-
-            sql = `
-                UPDATE admin
-                SET
-                    username = ?,
-                    security_question = ?,
-                    security_answer = ?
-                WHERE id = ?
-            `;
-
-
-            values = [
-                username,
-                security_question || null,
-                security_answer || null,
-                req.params.id
-            ];
+            ]);
 
         }
 
 
-        db.query(
-            sql,
-            values,
-            (err) => {
+        // -------------------------------------------------
+        // UPDATE WITHOUT PASSWORD
+        // -------------------------------------------------
 
-                if (err) {
+        else {
 
-                    return res.status(500).json({
-                        error: err.message
-                    });
+            result = await db.query(`
+                UPDATE admin
+                SET
+                    username = $1,
+                    security_question = $2,
+                    security_answer = $3
+                WHERE id = $4
+                RETURNING id, username
+            `, [
 
-                }
+                username.trim(),
+
+                security_question || null,
+
+                security_answer || null,
+
+                req.params.id
+
+            ]);
+
+        }
 
 
-                res.json({
-                    message: "Admin account updated successfully"
-                });
+        if (result.rows.length === 0) {
 
-            }
-        );
+            return res.status(404).json({
+                error: "Admin account not found"
+            });
+
+        }
+
+
+        // Keep current session username updated
+        if (
+            req.session.adminId &&
+            Number(req.session.adminId) ===
+            Number(req.params.id)
+        ) {
+
+            req.session.username =
+                result.rows[0].username;
+
+        }
+
+
+        res.json({
+
+            message:
+                "Admin account updated successfully",
+
+            admin:
+                result.rows[0]
+
+        });
 
     } catch (error) {
 
+        console.error(
+            "Update admin error:",
+            error
+        );
+
         res.status(500).json({
-            error: "Unable to update admin account"
+            error: error.message
         });
 
     }
@@ -362,32 +402,64 @@ router.put("/:id", async (req, res) => {
 // DELETE ADMIN ACCOUNT
 // =====================================================
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
 
-    const sql =
-        "DELETE FROM admin WHERE id = ?";
+    try {
 
+        // Do not allow deleting the currently
+        // logged-in admin account.
 
-    db.query(
-        sql,
-        [req.params.id],
-        (err) => {
+        if (
+            req.session.adminId &&
+            Number(req.session.adminId) ===
+            Number(req.params.id)
+        ) {
 
-            if (err) {
-
-                return res.status(500).json({
-                    error: err.message
-                });
-
-            }
-
-
-            res.json({
-                message: "Admin account deleted successfully"
+            return res.status(400).json({
+                error:
+                    "You cannot delete the currently logged-in admin account."
             });
 
         }
-    );
+
+
+        const result = await db.query(`
+            DELETE FROM admin
+            WHERE id = $1
+            RETURNING id
+        `, [
+            req.params.id
+        ]);
+
+
+        if (result.rows.length === 0) {
+
+            return res.status(404).json({
+                error: "Admin account not found"
+            });
+
+        }
+
+
+        res.json({
+
+            message:
+                "Admin account deleted successfully"
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Delete admin error:",
+            error
+        );
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
 
 });
 

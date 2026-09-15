@@ -1,38 +1,35 @@
 const express = require("express");
-const path = require("path");
 const session = require("express-session");
+const path = require("path");
+require("dotenv").config();
 
 const app = express();
-const PORT = 3000;
 
 
-// =========================================
-// DATABASE
-// =========================================
+// =====================================================
+// BASIC SETTINGS
+// =====================================================
 
-const db = require("./db");
+const PORT = process.env.PORT || 3000;
 
 
-// =========================================
+// =====================================================
 // MIDDLEWARE
-// =========================================
+// =====================================================
 
 app.use(express.json());
-
-app.use(
-    express.urlencoded({
-        extended: true
-    })
-);
+app.use(express.urlencoded({ extended: true }));
 
 
-// =========================================
+// =====================================================
 // SESSION
-// =========================================
+// =====================================================
 
 app.use(
     session({
-        secret: "cricket-records-secret-key",
+        secret:
+            process.env.SESSION_SECRET ||
+            "cricket-records-secret",
 
         resave: false,
 
@@ -45,9 +42,9 @@ app.use(
 );
 
 
-// =========================================
-// PUBLIC FOLDER
-// =========================================
+// =====================================================
+// STATIC FILES
+// =====================================================
 
 app.use(
     express.static(
@@ -56,9 +53,86 @@ app.use(
 );
 
 
-// =========================================
-// VISITOR HOME PAGE
-// =========================================
+// =====================================================
+// ROUTES
+// =====================================================
+
+const teamsRouter =
+    require("./routes/teams");
+
+const cupsRouter =
+    require("./routes/cups");
+
+const seriesRouter =
+    require("./routes/series");
+
+const matchesRouter =
+    require("./routes/matches");
+
+const biodataRouter =
+    require("./routes/biodata");
+
+const adminRouter =
+    require("./routes/admin");
+
+
+// =====================================================
+// API ROUTES
+// =====================================================
+
+app.use(
+    "/api/teams",
+    teamsRouter
+);
+
+app.use(
+    "/api/cups",
+    cupsRouter
+);
+
+app.use(
+    "/api/series",
+    seriesRouter
+);
+
+app.use(
+    "/api/matches",
+    matchesRouter
+);
+
+app.use(
+    "/api/biodata",
+    biodataRouter
+);
+
+app.use(
+    "/api/admin",
+    adminRouter
+);
+
+
+// =====================================================
+// ADMIN LOGIN CHECK
+// =====================================================
+
+function requireAdmin(req, res, next) {
+
+    if (!req.session.adminId) {
+
+        return res.redirect(
+            "/admin-login"
+        );
+
+    }
+
+    next();
+
+}
+
+
+// =====================================================
+// HOME PAGE
+// =====================================================
 
 app.get("/", (req, res) => {
 
@@ -73,267 +147,155 @@ app.get("/", (req, res) => {
 });
 
 
-// =========================================
+// =====================================================
 // ADMIN LOGIN PAGE
-// =========================================
+// =====================================================
 
-app.get("/admin-login", (req, res) => {
+app.get(
+    "/admin-login",
+    (req, res) => {
 
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "admin-login.html"
-        )
-    );
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "admin-login.html"
+            )
+        );
 
-});
+    }
+);
 
 
-// =========================================
+// =====================================================
 // ADMIN DASHBOARD
-// =========================================
+// =====================================================
 
-app.get("/admin-dashboard", (req, res) => {
+app.get(
+    "/admin-dashboard",
+    requireAdmin,
+    (req, res) => {
 
-    if (!req.session.adminId) {
-
-        return res.redirect(
-            "/admin-login"
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "admin-dashboard.html"
+            )
         );
 
     }
-
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "admin-dashboard.html"
-        )
-    );
-
-});
+);
 
 
-// =========================================
+// =====================================================
 // CUP MANAGEMENT
-// =========================================
+// =====================================================
 
-app.get("/cup-management", (req, res) => {
+app.get(
+    "/cup-management",
+    requireAdmin,
+    (req, res) => {
 
-    if (!req.session.adminId) {
-
-        return res.redirect(
-            "/admin-login"
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "cup-management.html"
+            )
         );
 
     }
-
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "cup-management.html"
-        )
-    );
-
-});
+);
 
 
-// =========================================
+// =====================================================
 // SERIES MANAGEMENT
-// =========================================
+// =====================================================
 
-app.get("/series-management", (req, res) => {
+app.get(
+    "/series-management",
+    requireAdmin,
+    (req, res) => {
 
-    if (!req.session.adminId) {
-
-        return res.redirect(
-            "/admin-login"
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "series-management.html"
+            )
         );
 
     }
-
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "series-management.html"
-        )
-    );
-
-});
+);
 
 
-// =========================================
+// =====================================================
 // MATCH MANAGEMENT
-// =========================================
+// =====================================================
 
-app.get("/match-management", (req, res) => {
+app.get(
+    "/match-management",
+    requireAdmin,
+    (req, res) => {
 
-    if (!req.session.adminId) {
-
-        return res.redirect(
-            "/admin-login"
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "match-management.html"
+            )
         );
 
     }
-
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "match-management.html"
-        )
-    );
-
-});
-     //----------------------------------//
-     // BIODATA MANAGEMENT//
-     //-----------------------------------//
-
-    app.get("/biodata-management", (req, res) => {
-    if (!req.session.adminId) {
-        return res.redirect("/admin-login");
-    }
-
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "biodata-management.html"
-        )
-    );
-});
+);
 
 
-// =========================================
-// TEAM SETTINGS
-// =========================================
+// =====================================================
+// BIODATA MANAGEMENT
+// =====================================================
 
-app.get("/team-settings", (req, res) => {
+app.get(
+    "/biodata-management",
+    requireAdmin,
+    (req, res) => {
 
-    if (!req.session.adminId) {
-
-        return res.redirect(
-            "/admin-login"
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "biodata-management.html"
+            )
         );
 
     }
-
-    res.sendFile(
-        path.join(
-            __dirname,
-            "views",
-            "team-settings.html"
-        )
-    );
-
-});
-
-
-
-// =========================================
-// API ROUTES
-// =========================================
-
-
-// TEAMS
-
-const teamsRoutes =
-    require("./routes/teams");
-
-app.use(
-    "/api/teams",
-    teamsRoutes
 );
 
 
-// CUPS
+// =====================================================
+// ADMIN ACCOUNT
+// =====================================================
 
-const cupsRoutes =
-    require("./routes/cups");
+app.get(
+    "/admin-account",
+    requireAdmin,
+    (req, res) => {
 
-app.use(
-    "/api/cups",
-    cupsRoutes
+        res.sendFile(
+            path.join(
+                __dirname,
+                "views",
+                "admin-account.html"
+            )
+        );
+
+    }
 );
 
 
-// SERIES
-
-const seriesRoutes =
-    require("./routes/series");
-
-app.use(
-    "/api/series",
-    seriesRoutes
-);
-
-
-// MATCHES
-
-const matchesRoutes =
-    require("./routes/matches");
-
-app.use(
-    "/api/matches",
-    matchesRoutes
-);
-
-
-// BIODATA
-
-const biodataRoutes =
-    require("./routes/biodata");
-
-app.use(
-    "/api/biodata",
-    biodataRoutes
-);
-
-
-// ADMIN
-
-const adminRoutes =
-    require("./routes/admin");
-
-app.use(
-    "/api/admin",
-    adminRoutes
-);
-
-
-// =========================================
-// DATABASE TEST
-// =========================================
-
-app.get("/test-db", (req, res) => {
-
-    db.query(
-        "SELECT * FROM teams",
-
-        (err, results) => {
-
-            if (err) {
-
-                return res.status(500).json({
-                    error: err.message
-                });
-
-            }
-
-            res.json(results);
-
-        }
-    );
-
-});
-
-
-// =========================================
+// =====================================================
 // START SERVER
-// =========================================
+// =====================================================
 
 app.listen(
     PORT,

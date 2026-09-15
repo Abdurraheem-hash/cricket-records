@@ -2,52 +2,85 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// Get all players
-router.get("/", (req, res) => {
-    const sql = `
-        SELECT *
-        FROM biodata
-        ORDER BY name ASC
-    `;
 
-    db.query(sql, (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                error: err.message
-            });
-        }
+// ============================================================
+// GET ALL PLAYERS
+// ============================================================
 
-        res.json(results);
-    });
+router.get("/", async (req, res) => {
+
+    try {
+
+        const result = await db.query(`
+            SELECT *
+            FROM biodata
+            ORDER BY name ASC
+        `);
+
+        res.json(result.rows);
+
+    } catch (error) {
+
+        console.error("Get biodata error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
 });
 
-// Get one player
-router.get("/:id", (req, res) => {
-    const sql = `
-        SELECT *
-        FROM biodata
-        WHERE id = ?
-    `;
 
-    db.query(sql, [req.params.id], (err, results) => {
-        if (err) {
-            return res.status(500).json({
-                error: err.message
-            });
-        }
 
-        if (results.length === 0) {
+// ============================================================
+// GET ONE PLAYER
+// ============================================================
+
+router.get("/:id", async (req, res) => {
+
+    try {
+
+        const result = await db.query(`
+            SELECT *
+            FROM biodata
+            WHERE id = $1
+        `, [
+            req.params.id
+        ]);
+
+
+        if (result.rows.length === 0) {
+
             return res.status(404).json({
                 error: "Player not found"
             });
+
         }
 
-        res.json(results[0]);
-    });
+
+        res.json(result.rows[0]);
+
+    } catch (error) {
+
+        console.error("Get player error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
 });
 
-// Add player
-router.post("/", (req, res) => {
+
+
+// ============================================================
+// ADD PLAYER
+// ============================================================
+
+router.post("/", async (req, res) => {
+
     const {
         name,
         photo,
@@ -55,43 +88,71 @@ router.post("/", (req, res) => {
         biography
     } = req.body;
 
-    if (!name || !role) {
+
+    // --------------------------------------------------------
+    // VALIDATION
+    // --------------------------------------------------------
+
+    if (!name || !name.trim() || !role || !role.trim()) {
+
         return res.status(400).json({
             error: "Name and role are required"
         });
+
     }
 
-    const sql = `
-        INSERT INTO biodata
-        (name, photo, role, biography)
-        VALUES (?, ?, ?, ?)
-    `;
 
-    db.query(
-        sql,
-        [
-            name,
+    try {
+
+        const result = await db.query(`
+            INSERT INTO biodata
+            (
+                name,
+                photo,
+                role,
+                biography
+            )
+            VALUES
+            ($1, $2, $3, $4)
+            RETURNING id
+        `, [
+            name.trim(),
             photo || null,
-            role,
+            role.trim(),
             biography || null
-        ],
-        (err, result) => {
-            if (err) {
-                return res.status(500).json({
-                    error: err.message
-                });
-            }
+        ]);
 
-            res.json({
-                message: "Player added successfully",
-                id: result.insertId
-            });
-        }
-    );
+
+        res.status(201).json({
+
+            message:
+                "Player added successfully",
+
+            id:
+                result.rows[0].id
+
+        });
+
+    } catch (error) {
+
+        console.error("Add player error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
 });
 
-// Update player
-router.put("/:id", (req, res) => {
+
+
+// ============================================================
+// UPDATE PLAYER
+// ============================================================
+
+router.put("/:id", async (req, res) => {
+
     const {
         name,
         photo,
@@ -99,60 +160,115 @@ router.put("/:id", (req, res) => {
         biography
     } = req.body;
 
-    if (!name || !role) {
+
+    // --------------------------------------------------------
+    // VALIDATION
+    // --------------------------------------------------------
+
+    if (!name || !name.trim() || !role || !role.trim()) {
+
         return res.status(400).json({
             error: "Name and role are required"
         });
+
     }
 
-    const sql = `
-        UPDATE biodata
-        SET
-            name = ?,
-            photo = ?,
-            role = ?,
-            biography = ?
-        WHERE id = ?
-    `;
 
-    db.query(
-        sql,
-        [
-            name,
+    try {
+
+        const result = await db.query(`
+            UPDATE biodata
+            SET
+                name = $1,
+                photo = $2,
+                role = $3,
+                biography = $4
+            WHERE id = $5
+            RETURNING id
+        `, [
+            name.trim(),
             photo || null,
-            role,
+            role.trim(),
             biography || null,
             req.params.id
-        ],
-        (err) => {
-            if (err) {
-                return res.status(500).json({
-                    error: err.message
-                });
-            }
+        ]);
 
-            res.json({
-                message: "Player updated successfully"
+
+        if (result.rows.length === 0) {
+
+            return res.status(404).json({
+                error: "Player not found"
             });
-        }
-    );
-});
 
-// Delete player
-router.delete("/:id", (req, res) => {
-    const sql = "DELETE FROM biodata WHERE id = ?";
-
-    db.query(sql, [req.params.id], (err) => {
-        if (err) {
-            return res.status(500).json({
-                error: err.message
-            });
         }
+
 
         res.json({
-            message: "Player deleted successfully"
+
+            message:
+                "Player updated successfully"
+
         });
-    });
+
+    } catch (error) {
+
+        console.error("Update player error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
 });
+
+
+
+// ============================================================
+// DELETE PLAYER
+// ============================================================
+
+router.delete("/:id", async (req, res) => {
+
+    try {
+
+        const result = await db.query(`
+            DELETE FROM biodata
+            WHERE id = $1
+            RETURNING id
+        `, [
+            req.params.id
+        ]);
+
+
+        if (result.rows.length === 0) {
+
+            return res.status(404).json({
+                error: "Player not found"
+            });
+
+        }
+
+
+        res.json({
+
+            message:
+                "Player deleted successfully"
+
+        });
+
+    } catch (error) {
+
+        console.error("Delete player error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+});
+
+
 
 module.exports = router;

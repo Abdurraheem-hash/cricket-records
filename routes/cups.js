@@ -6,26 +6,23 @@ const db = require("../db");
 // GET ALL CUPS
 // =================================================
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT *
+            FROM cups
+            ORDER BY cup_number ASC
+        `);
 
-    const sql = `
-        SELECT *
-        FROM cups
-        ORDER BY cup_number ASC
-    `;
+        res.json(result.rows);
 
-    db.query(sql, (err, results) => {
+    } catch (error) {
+        console.error("Get cups error:", error);
 
-        if (err) {
-            return res.status(500).json({
-                error: err.message
-            });
-        }
-
-        res.json(results);
-
-    });
-
+        res.status(500).json({
+            error: error.message
+        });
+    }
 });
 
 
@@ -33,32 +30,29 @@ router.get("/", (req, res) => {
 // GET ONE CUP
 // =================================================
 
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT *
+            FROM cups
+            WHERE id = $1
+        `, [req.params.id]);
 
-    const sql = `
-        SELECT *
-        FROM cups
-        WHERE id = ?
-    `;
-
-    db.query(sql, [req.params.id], (err, results) => {
-
-        if (err) {
-            return res.status(500).json({
-                error: err.message
-            });
-        }
-
-        if (results.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(404).json({
                 error: "Cup not found"
             });
         }
 
-        res.json(results[0]);
+        res.json(result.rows[0]);
 
-    });
+    } catch (error) {
+        console.error("Get cup error:", error);
 
+        res.status(500).json({
+            error: error.message
+        });
+    }
 });
 
 
@@ -66,86 +60,50 @@ router.get("/:id", (req, res) => {
 // CREATE NEW CUP
 // =================================================
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
 
     const { cup_name } = req.body;
 
     if (!cup_name || !cup_name.trim()) {
-
         return res.status(400).json({
             error: "Cup name is required"
         });
-
     }
 
+    try {
 
-    // Find the next cup number
+        // Find the next cup number
+        const numberResult = await db.query(`
+            SELECT COALESCE(MAX(cup_number), 0) + 1 AS next_number
+            FROM cups
+        `);
 
-    const numberSql = `
-        SELECT COALESCE(MAX(cup_number), 0) + 1 AS next_number
-        FROM cups
-    `;
-
-
-    db.query(numberSql, (err, results) => {
-
-        if (err) {
-
-            return res.status(500).json({
-                error: err.message
-            });
-
-        }
-
-
-        const cupNumber =
-            results[0].next_number;
-
+        const cupNumber = numberResult.rows[0].next_number;
 
         // Insert new cup
-
-        const insertSql = `
+        const insertResult = await db.query(`
             INSERT INTO cups
             (cup_number, cup_name)
-            VALUES (?, ?)
-        `;
+            VALUES ($1, $2)
+            RETURNING id, cup_number, cup_name
+        `, [
+            cupNumber,
+            cup_name.trim()
+        ]);
 
+        res.status(201).json({
+            message: "Cup created successfully",
+            ...insertResult.rows[0]
+        });
 
-        db.query(
-            insertSql,
-            [
-                cupNumber,
-                cup_name.trim()
-            ],
-            (err, result) => {
+    } catch (error) {
 
-                if (err) {
+        console.error("Create cup error:", error);
 
-                    return res.status(500).json({
-                        error: err.message
-                    });
-
-                }
-
-
-                res.json({
-
-                    message:
-                        "Cup created successfully",
-
-                    id: result.insertId,
-
-                    cup_number: cupNumber,
-
-                    cup_name: cup_name.trim()
-
-                });
-
-            }
-        );
-
-    });
-
+        res.status(500).json({
+            error: error.message
+        });
+    }
 });
 
 
@@ -153,7 +111,7 @@ router.post("/", (req, res) => {
 // UPDATE CUP
 // =================================================
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
 
     const {
         cup_name,
@@ -163,48 +121,46 @@ router.put("/:id", (req, res) => {
         completed
     } = req.body;
 
+    try {
 
-    const sql = `
-        UPDATE cups
-        SET
-            cup_name = ?,
-            team_a_series_wins = ?,
-            team_b_series_wins = ?,
-            winner = ?,
-            completed = ?
-        WHERE id = ?
-    `;
-
-
-    db.query(
-        sql,
-        [
+        const result = await db.query(`
+            UPDATE cups
+            SET
+                cup_name = $1,
+                team_a_series_wins = $2,
+                team_b_series_wins = $3,
+                winner = $4,
+                completed = $5
+            WHERE id = $6
+            RETURNING *
+        `, [
             cup_name,
             team_a_series_wins || 0,
             team_b_series_wins || 0,
             winner || null,
             completed || false,
             req.params.id
-        ],
-        (err) => {
+        ]);
 
-            if (err) {
-
-                return res.status(500).json({
-                    error: err.message
-                });
-
-            }
-
-
-            res.json({
-                message:
-                    "Cup updated successfully"
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Cup not found"
             });
-
         }
-    );
 
+        res.json({
+            message: "Cup updated successfully",
+            cup: result.rows[0]
+        });
+
+    } catch (error) {
+
+        console.error("Update cup error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+    }
 });
 
 
@@ -212,34 +168,34 @@ router.put("/:id", (req, res) => {
 // DELETE CUP
 // =================================================
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
 
-    const sql =
-        "DELETE FROM cups WHERE id = ?";
+    try {
 
+        const result = await db.query(`
+            DELETE FROM cups
+            WHERE id = $1
+            RETURNING id
+        `, [req.params.id]);
 
-    db.query(
-        sql,
-        [req.params.id],
-        (err) => {
-
-            if (err) {
-
-                return res.status(500).json({
-                    error: err.message
-                });
-
-            }
-
-
-            res.json({
-                message:
-                    "Cup deleted successfully"
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Cup not found"
             });
-
         }
-    );
 
+        res.json({
+            message: "Cup deleted successfully"
+        });
+
+    } catch (error) {
+
+        console.error("Delete cup error:", error);
+
+        res.status(500).json({
+            error: error.message
+        });
+    }
 });
 
 
